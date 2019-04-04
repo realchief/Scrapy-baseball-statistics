@@ -13,7 +13,7 @@ class SiteProductItem(Item):
     # Scores = Field()
 
 
-class ZillowScraper (scrapy.Spider):
+class SportsScraper (scrapy.Spider):
     name = "scrapingdata"
     allowed_domains = ['www.baseball-reference.com']
     DOMAIN_URL = 'https://www.baseball-reference.com'
