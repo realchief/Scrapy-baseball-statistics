@@ -2,6 +2,7 @@ from lxml import html
 from scrapy import Request
 import scrapy
 from scrapy.item import Item, Field
+import sys
 
 
 class SiteProductItem(Item):
@@ -16,8 +17,7 @@ class SportsScraper (scrapy.Spider):
     name = "scrapingdata"
     allowed_domains = ['www.baseball-reference.com']
     DOMAIN_URL = 'https://www.baseball-reference.com'
-    START_URL = 'https://www.baseball-reference.com/leagues/MLB/2016-schedule.shtml'
-    # settings.overrides['ROBOTSTXT_OBEY'] = False
+    START_URL = 'https://www.baseball-reference.com/leagues/MLB/2010-schedule.shtml'
 
     def __init__(self, **kwargs):
         self.headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)"
