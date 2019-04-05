@@ -16,7 +16,7 @@ class SportsScraper (scrapy.Spider):
     name = "scrapingdata"
     allowed_domains = ['www.baseball-reference.com']
     DOMAIN_URL = 'https://www.baseball-reference.com'
-    START_URL = 'https://www.baseball-reference.com/leagues/MLB/2017-schedule.shtml'
+    START_URL = 'https://www.baseball-reference.com/leagues/MLB/2016-schedule.shtml'
     # settings.overrides['ROBOTSTXT_OBEY'] = False
 
     def __init__(self, **kwargs):
@@ -41,6 +41,13 @@ class SportsScraper (scrapy.Spider):
                           dont_filter=True,
                           headers=self.headers
                           )
+
+        # url = 'https://www.baseball-reference.com/boxes/ANA/ANA201704120.shtml'
+        # yield Request(url=url,
+        #               callback=self.parse_detail,
+        #               dont_filter=True,
+        #               headers=self.headers
+        #               )
 
     def parse_detail(self, response):
 
