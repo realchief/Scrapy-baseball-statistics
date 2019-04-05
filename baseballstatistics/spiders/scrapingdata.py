@@ -1,4 +1,4 @@
-
+from lxml import html
 from scrapy import Request
 import scrapy
 from scrapy.item import Item, Field
@@ -10,7 +10,7 @@ class SiteProductItem(Item):
     Time = Field()
     VisitorTeam = Field()
     HomeTeam = Field()
-    # Scores = Field()
+    Scores = Field()
 
 
 class SportsScraper (scrapy.Spider):
@@ -58,21 +58,36 @@ class SportsScraper (scrapy.Spider):
 
         HomeTeam = self._parse_HomeTeam(response)
         product['HomeTeam'] = HomeTeam
-        #
-        # Scores = self._parse_Scores(response)
-        # product['Scores'] = Scores
+
+        Scores = self._parse_Scores(response)
+        product['Scores'] = Scores
 
         yield product
 
     @staticmethod
     def _parse_VisitorTeam(response):
         team_names = response.xpath('//div[@class="scorebox"]//strong/a/text()').extract()
-        return str(team_names[0]) if team_names else None
+        visitor_team_name = str(team_names[0]) if team_names else None
+        visitor_team_tabble_id = visitor_team_name.replace(' ', '') + 'batting'
+        theader = html.fromstring(response.body.replace('<!--', '').replace('--!>', '')).xpath(
+            '//table[@id="%s"]/thead//th/text()' % visitor_team_tabble_id)
+        tfoot_td = html.fromstring(response.body.replace('<!--', '').replace('--!>', '')).xpath(
+            '//table[@id="%s"]/tfoot//td/text()' % visitor_team_tabble_id)
+        visitor_state = {}
+        for index, value in enumerate(tfoot_td):
+            visitor_state[theader[index+1]] = value
+        visitor_team_info = {
+            'name': visitor_team_name,
+            'stat': visitor_state
+        }
+
+        return visitor_team_info
 
     @staticmethod
     def _parse_HomeTeam(response):
         team_names = response.xpath('//div[@class="scorebox"]//strong/a/text()').extract()
-        return str(team_names[1]) if team_names else None
+        home_team_name = str(team_names[1]) if team_names else None
+        return home_team_name
 
     @staticmethod
     def _parse_Date(response):
@@ -83,11 +98,11 @@ class SportsScraper (scrapy.Spider):
     def _parse_Time(response):
         game_infos = response.xpath('//div[@class="scorebox_meta"]/div/text()').extract()
         return str(game_infos[1]) if game_infos else None
-    #
-    # @staticmethod
-    # def _parse_Scores(response):
-    #
-    #     visitor_team_name = response.xpath('//p[@class="game"]/em/a/@href').extract()
-    #     return str(visitor_team_name) if visitor_team_name else None
+
+    @staticmethod
+    def _parse_Scores(response):
+
+        visitor_team_name = response.xpath('//p[@class="game"]/em/a/@href').extract()
+        return str(visitor_team_name) if visitor_team_name else None
 
 
