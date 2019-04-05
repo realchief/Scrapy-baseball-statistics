@@ -10,7 +10,7 @@ class SiteProductItem(Item):
     Time = Field()
     VisitorTeam = Field()
     HomeTeam = Field()
-    Scores = Field()
+    # Scores = Field()
 
 
 class SportsScraper (scrapy.Spider):
@@ -58,9 +58,9 @@ class SportsScraper (scrapy.Spider):
 
         HomeTeam = self._parse_HomeTeam(response)
         product['HomeTeam'] = HomeTeam
-
-        Scores = self._parse_Scores(response)
-        product['Scores'] = Scores
+        #
+        # Scores = self._parse_Scores(response)
+        # product['Scores'] = Scores
 
         yield product
 
@@ -87,7 +87,20 @@ class SportsScraper (scrapy.Spider):
     def _parse_HomeTeam(response):
         team_names = response.xpath('//div[@class="scorebox"]//strong/a/text()').extract()
         home_team_name = str(team_names[1]) if team_names else None
-        return home_team_name
+        home_team_tabble_id = home_team_name.replace(' ', '') + 'batting'
+        theader = html.fromstring(response.body.replace('<!--', '').replace('--!>', '')).xpath(
+            '//table[@id="%s"]/thead//th/text()' % home_team_tabble_id)
+        tfoot_td = html.fromstring(response.body.replace('<!--', '').replace('--!>', '')).xpath(
+            '//table[@id="%s"]/tfoot//td/text()' % home_team_tabble_id)
+        home_state = {}
+        for index, value in enumerate(tfoot_td):
+            home_state[theader[index + 1]] = value
+        home_team_info = {
+            'name': home_team_name,
+            'stat': home_state
+        }
+
+        return home_team_info
 
     @staticmethod
     def _parse_Date(response):
@@ -99,10 +112,10 @@ class SportsScraper (scrapy.Spider):
         game_infos = response.xpath('//div[@class="scorebox_meta"]/div/text()').extract()
         return str(game_infos[1]) if game_infos else None
 
-    @staticmethod
-    def _parse_Scores(response):
-
-        visitor_team_name = response.xpath('//p[@class="game"]/em/a/@href').extract()
-        return str(visitor_team_name) if visitor_team_name else None
+    # @staticmethod
+    # def _parse_Scores(response):
+    #
+    #     visitor_team_name = response.xpath('//p[@class="game"]/em/a/@href').extract()
+    #     return str(visitor_team_name) if visitor_team_name else None
 
 
