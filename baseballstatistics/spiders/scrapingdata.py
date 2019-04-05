@@ -10,7 +10,6 @@ class SiteProductItem(Item):
     Time = Field()
     VisitorTeam = Field()
     HomeTeam = Field()
-    # Scores = Field()
 
 
 class SportsScraper (scrapy.Spider):
@@ -58,9 +57,6 @@ class SportsScraper (scrapy.Spider):
 
         HomeTeam = self._parse_HomeTeam(response)
         product['HomeTeam'] = HomeTeam
-        #
-        # Scores = self._parse_Scores(response)
-        # product['Scores'] = Scores
 
         yield product
 
@@ -68,6 +64,16 @@ class SportsScraper (scrapy.Spider):
     def _parse_VisitorTeam(response):
         team_names = response.xpath('//div[@class="scorebox"]//strong/a/text()').extract()
         visitor_team_name = str(team_names[0]) if team_names else None
+
+        score_theader = response.xpath('//table/thead//th/text()').extract()
+        score_visitor_tr = response.xpath('//table/tbody/tr')[0]
+        score_visitor_score_values = score_visitor_tr.xpath('./td/text()').extract()
+        visitor_scores = {}
+        for index in range(2, len(score_visitor_score_values)):
+            key = str(score_theader[index])
+            score_value = str(score_visitor_score_values[index])
+            visitor_scores[key] = score_value
+
         visitor_team_tabble_id = visitor_team_name.replace(' ', '') + 'batting'
         theader = html.fromstring(response.body.replace('<!--', '').replace('--!>', '')).xpath(
             '//table[@id="%s"]/thead//th/text()' % visitor_team_tabble_id)
@@ -78,7 +84,8 @@ class SportsScraper (scrapy.Spider):
             visitor_state[theader[index+1]] = value
         visitor_team_info = {
             'name': visitor_team_name,
-            'stat': visitor_state
+            'stat': visitor_state,
+            'scores': visitor_scores
         }
 
         return visitor_team_info
@@ -87,6 +94,16 @@ class SportsScraper (scrapy.Spider):
     def _parse_HomeTeam(response):
         team_names = response.xpath('//div[@class="scorebox"]//strong/a/text()').extract()
         home_team_name = str(team_names[1]) if team_names else None
+
+        score_theader = response.xpath('//table/thead//th/text()').extract()
+        score_home_tr = response.xpath('//table/tbody/tr')[1]
+        score_home_score_values = score_home_tr.xpath('./td/text()').extract()
+        home_scores = {}
+        for index in range(2, len(score_home_score_values)):
+            key = str(score_theader[index])
+            score_value = str(score_home_score_values[index])
+            home_scores[key] = score_value
+
         home_team_tabble_id = home_team_name.replace(' ', '') + 'batting'
         theader = html.fromstring(response.body.replace('<!--', '').replace('--!>', '')).xpath(
             '//table[@id="%s"]/thead//th/text()' % home_team_tabble_id)
@@ -97,7 +114,8 @@ class SportsScraper (scrapy.Spider):
             home_state[theader[index + 1]] = value
         home_team_info = {
             'name': home_team_name,
-            'stat': home_state
+            'stat': home_state,
+            'scores': home_scores
         }
 
         return home_team_info
@@ -112,10 +130,5 @@ class SportsScraper (scrapy.Spider):
         game_infos = response.xpath('//div[@class="scorebox_meta"]/div/text()').extract()
         return str(game_infos[1]) if game_infos else None
 
-    # @staticmethod
-    # def _parse_Scores(response):
-    #
-    #     visitor_team_name = response.xpath('//p[@class="game"]/em/a/@href').extract()
-    #     return str(visitor_team_name) if visitor_team_name else None
 
 
