@@ -20,6 +20,6 @@
 ## Run spiders
 
 * `$ cd baseballstatistics/spiders`
-* `$ scrapy crawl scrapingdata -arg 2017 -o result2017.json`
+* `$ scrapy crawl scrapingdata -o result2017.json`
 
 ## Check result2017.json
