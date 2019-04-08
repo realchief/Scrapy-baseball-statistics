@@ -17,7 +17,7 @@ class SportsScraper (scrapy.Spider):
     name = "scrapingdata"
     allowed_domains = ['www.baseball-reference.com']
     DOMAIN_URL = 'https://www.baseball-reference.com'
-    START_URL = 'https://www.baseball-reference.com/leagues/MLB/2018-schedule.shtml'
+    START_URL = 'https://www.baseball-reference.com/leagues/MLB/2017-schedule.shtml'
 
     def __init__(self, **kwargs):
         self.headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)"
@@ -41,6 +41,7 @@ class SportsScraper (scrapy.Spider):
                           dont_filter=True,
                           headers=self.headers
                           )
+
 
     def parse_detail(self, response):
 
