@@ -42,13 +42,6 @@ class SportsScraper (scrapy.Spider):
                           headers=self.headers
                           )
 
-        # url = 'https://www.baseball-reference.com/boxes/ANA/ANA201704120.shtml'
-        # yield Request(url=url,
-        #               callback=self.parse_detail,
-        #               dont_filter=True,
-        #               headers=self.headers
-        #               )
-
     def parse_detail(self, response):
 
         product = SiteProductItem()
