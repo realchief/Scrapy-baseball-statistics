@@ -2,7 +2,7 @@ from lxml import html
 from scrapy import Request
 import scrapy
 from scrapy.item import Item, Field
-import sys
+import moment
 
 
 class SiteProductItem(Item):
@@ -17,7 +17,7 @@ class SportsScraper (scrapy.Spider):
     name = "scrapingdata"
     allowed_domains = ['www.baseball-reference.com']
     DOMAIN_URL = 'https://www.baseball-reference.com'
-    START_URL = 'https://www.baseball-reference.com/leagues/MLB/2010-schedule.shtml'
+    START_URL = 'https://www.baseball-reference.com/leagues/MLB/2018-schedule.shtml'
 
     def __init__(self, **kwargs):
         self.headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)"
@@ -41,13 +41,6 @@ class SportsScraper (scrapy.Spider):
                           dont_filter=True,
                           headers=self.headers
                           )
-
-        # url = 'https://www.baseball-reference.com/boxes/ANA/ANA201704120.shtml'
-        # yield Request(url=url,
-        #               callback=self.parse_detail,
-        #               dont_filter=True,
-        #               headers=self.headers
-        #               )
 
     def parse_detail(self, response):
 
@@ -79,7 +72,10 @@ class SportsScraper (scrapy.Spider):
         for index in range(2, len(score_visitor_score_values)):
             key = str(score_theader[index])
             score_value = str(score_visitor_score_values[index])
-            visitor_scores[key] = score_value
+            try:
+                visitor_scores[key] = int(score_value)
+            except:
+                visitor_scores[key] = 0
 
         visitor_team_tabble_id = visitor_team_name.replace(' ', '') + 'batting'
         theader = html.fromstring(response.body.replace('<!--', '').replace('--!>', '')).xpath(
@@ -88,7 +84,11 @@ class SportsScraper (scrapy.Spider):
             '//table[@id="%s"]/tfoot//td/text()' % visitor_team_tabble_id)
         visitor_state = {}
         for index, value in enumerate(tfoot_td):
-            visitor_state[theader[index+1]] = value
+            try:
+                parsed_value = int(value)
+            except:
+                parsed_value = float(value)
+            visitor_state[theader[index+1]] = parsed_value
         visitor_team_info = {
             'name': visitor_team_name,
             'stat': visitor_state,
@@ -109,7 +109,10 @@ class SportsScraper (scrapy.Spider):
         for index in range(2, len(score_home_score_values)):
             key = str(score_theader[index])
             score_value = str(score_home_score_values[index])
-            home_scores[key] = score_value
+            try:
+                home_scores[key] = int(score_value)
+            except:
+                home_scores[key] = 0
 
         home_team_tabble_id = home_team_name.replace(' ', '') + 'batting'
         theader = html.fromstring(response.body.replace('<!--', '').replace('--!>', '')).xpath(
@@ -118,7 +121,11 @@ class SportsScraper (scrapy.Spider):
             '//table[@id="%s"]/tfoot//td/text()' % home_team_tabble_id)
         home_state = {}
         for index, value in enumerate(tfoot_td):
-            home_state[theader[index + 1]] = value
+            try:
+                parsed_value = int(value)
+            except:
+                parsed_value = float(value)
+            home_state[theader[index + 1]] = parsed_value
         home_team_info = {
             'name': home_team_name,
             'stat': home_state,
@@ -130,7 +137,18 @@ class SportsScraper (scrapy.Spider):
     @staticmethod
     def _parse_Date(response):
         game_infos = response.xpath('//div[@class="scorebox_meta"]/div/text()').extract()
-        return str(game_infos[0]) if game_infos else None
+        date_info = str(game_infos[0]) if game_infos else None
+        result_date = moment.date(date_info)
+        year = result_date.year
+        month = result_date.month
+        day = result_date.day
+        final_date = {
+            'year': year,
+            'month': month,
+            'day': day
+        }
+
+        return final_date
 
     @staticmethod
     def _parse_Time(response):
